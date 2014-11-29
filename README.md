@@ -2,6 +2,7 @@ CanIHazCapacityTest
 ===================
 
 This is a minimalistic capacity testing toolkit.
+
 It's main purpose is to generate traffic from multiple servers,
 that's quickly and easily accessible via any configuration management
 tool or func shell for instance.
@@ -15,46 +16,59 @@ How to use it?
 
 Configuration file
 -----------
- path to file: *Capacity->configuration_file*
- format: test_name|test_type|test_frequency|metrics_destination
+path to file: *Capacity->configuration_file*
+
+format: test_name|test_type|test_frequency|metrics_destination
 
 **test_name**
-  human readable name, used in the metric that your test will generate
+
+  Human readable name, used in the metric that your test will generate.
+
 **test_type**
-  based on this type, we will define which class to use in our test
-  see *Capacity->capacity_tests_list* for list of available options
+
+  Based on this type, we will define which class to use in our test.
+  See *Capacity->capacity_tests_list* for the list of available options.
+
 **test_frequency**
-  how often do you want to run your test, within a minute
+
+How often do you want to run your test within a minute?
+
   1 - once a minute
+
   60 - once a second
+
 **metrics_destination**
-  where we want to send our test results
-  see *Capacity::Metrics->metrics_destinations_list* for list of available options
+
+  Where we want to send our test results?
+
+  See *Capacity::Metrics->metrics_destinations_list* for the list of available options.
 
 
 NOTE 1
 -----------
-This script is intended to run as a cron job
-therefore no ARGV parsing here
-all configurations are done via files
+This script is intended to run as a cron job,
+therefore no ARGV parsing here.
+
+All configurations are done via files.
 
 NOTE 2
 -----------
-Since it will be a cron job
-the highest possible execution frequency will be - minutely
-we will keep this script alive for 60 seconds,
-in order to be able to provide constant load of requests
+Since it will be a cron job,
+the highest possible execution frequency will be - minutely.
+We will keep this script alive for 60 seconds,
+in order to be able to provide constant load of requests.
 
 NOTE 3
 -----------
 Imagine a situation where the sevice we're testing is really slow,
 and request timeouts are high, because of that we might end up in situation where we have
-multiple instances of this script running on the same server
-let's not spawn more then 3 copies
+multiple instances of this script running on the same server.
+Let's not spawn more then 3 copies.
 
 NOTE 4
 -----------
-This tool is not designed to run multiple capacity tests in parallel
-especially becasuse test configurations are distibuted via fsh
-it's very easy to overwrite someone's else configurations
-but I'm willing to pay that price for the sake of simplicity
+This tool is not designed to run multiple capacity tests in parallel.
+Especially becasuse test configurations are distibuted via func shell,
+it's very easy to overwrite someone's else configurations.
+
+But I'm willing to pay that price for the sake of simplicity.
