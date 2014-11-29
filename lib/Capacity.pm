@@ -148,7 +148,7 @@ sub read_config {
         die 'File does not exists';
     }
 
-    # see NOTE 4 @ capacity.pl
+    # see NOTE 4 @ README.md
     # only 1 capacity test at a time
     my $test_config = $lines[0];
     chomp $test_config;
