@@ -7,15 +7,7 @@ use File::Slurp;
 use Log::Any qw($log);
 
 use Capacity::Metrics;
-
-has capacity_tests_list => (
-    is      => 'rw',
-    default => sub { return {
-        'riak_read'      => 'Capacity::Test::RiakRead',
-        'cassandra_read' => 'Capacity::Test::CassandraRead',
-        'google_test'    => 'Capacity::Test::GoogleTest'
-    }}
-);
+use Capacity::Test;
 
 has configuration_file => (
     is      => 'ro',
@@ -32,14 +24,13 @@ has stop_file => (
     default => '/home/ipaponov/OSS/CanIHazCapacityTest/conf/stop'
 );
 
-has test_name    => ( is => 'rw' );
-has test_type    => ( is => 'rw' );
-has test_freq    => ( is => 'rw' );
+has test         => ( is => 'rw' );
 has metrics      => ( is => 'rw' );
 
 sub BUILD {
     my $self = shift;
 
+    $self->test(Capacity::Test->new());
     $self->metrics(Capacity::Metrics->new());
 }
 
@@ -80,47 +71,8 @@ sub run {
         # TODO
         # Run tests according to specified frequency in the configuration file
 
-        $self->test();
+        $self->test->run($self->metrics);
         sleep(2);
-    }
-}
-
-sub test {
-    my $self = shift;
-
-    # I do not want to do it in attribute isa, because I do not want to die
-    # and generate storm of errors from multiple servers
-    # instead I want to send metrics-document
-    my $tt = $self->test_type;
-    if ($tt && !exists $self->capacity_tests_list()->{$tt}) {
-        $log->info('Unknown capacity test type, sending inforamtion about that');
-        $self->metrics->add_data( {'error' => { 'unknown capacity test type' => $tt }} );
-        $self->metrics->send();
-
-        return;
-    }
-
-    my $test_class = $self->capacity_tests_list()->{$tt};
-
-    eval "require $test_class"
-    or do {
-        $log->error("Require failed. $@");
-        # do not die here
-        # log everything silently and exit
-        exit;
-    };
-
-    my $t = $test_class->new(metrics_destination => $self->metrics);
-    eval {
-        $t->test();
-
-        $self->metrics->add_data($t->metrics);
-        $self->metrics->add_data({ test_name => $self->test_name });
-        $self->metrics->send();
-        1;
-    } or do {
-        # probably network issues, good luck next time
-        $log->info('Something failed during the test: '.$@);
     }
 }
 
@@ -155,9 +107,9 @@ sub read_config {
     my @test_config = split(/\|/, $test_config);
     $log->trace('Our configuration: '.Dumper(\@test_config));
 
-    $self->test_name($test_config[0]);
-    $self->test_type($test_config[1]);
-    $self->test_freq($test_config[2]);
+    $self->test->name($test_config[0]);
+    $self->test->type($test_config[1]);
+    $self->test->freq($test_config[2]);
     $self->metrics->metrics_destination($test_config[3]);
 
     $log->trace('Config file was successfully read @ '.$self->config_read_at);
