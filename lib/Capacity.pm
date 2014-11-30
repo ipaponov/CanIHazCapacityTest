@@ -74,6 +74,7 @@ sub run {
             # we probably have config file missing, therefore nothing to do
             # let's sleep at bit, to save some cpu cycles
             sleep(1);
+            $current_time = time();
             next;
         };
 
