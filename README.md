@@ -12,7 +12,17 @@ How to use it?
  * distribute this software over as many server as you want
  * put it in the crontabs on those servers, run it every minute
  * to start capacity test, create test configuration files on set of servers (via func shell, puppet, chef)
- * remove test configuration files, to stop capacity testing
+ * remove test configuration files, to stop capacity testing (or create a stop file, to temp. test freeze).
+
+Software should react immediately when you'll create new configuration file. As well stop file.  
+One thing to keep in mind, when adding new conf. file, you might have a bit more traffic then expected during the first minute.
+That's because we're already in the middle (or even at the end) of the minute, but we still have to execute X ammount of tests.
+Sotware will try to catch up. Starting from the next minute, everything should be as expected.  
+To avoid this you can:
+ * create stop file (all scripts will die)
+ * create configuration file
+ * remove stop file
+ * wait new cronjobs to start
 
 Configuration file
 -----------
@@ -30,6 +40,8 @@ See *Capacity->capacity_tests_list* for the list of available options.
 How often do you want to run your test within a minute?  
 1 - once a minute  
 60 - once a second  
+We will try to run that number of tests within a minute, but we do not guarantee that all of those will be executed.
+Software will stop our software after 60(ish) seconds of work. And if your test requires 10 seconds to pass, and you want 60 of those per minute. Well, no. You'll get only 6-7 of those.  
 
 **metrics_destination**  
 Where we want to send our test results?  
