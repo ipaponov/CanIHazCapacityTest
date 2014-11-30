@@ -32,6 +32,7 @@ after 'test' => sub {
     );
 
     my $metrics = { 'test_time' => $self->timer };
+    $metrics->{'test_epoch'} = time;
     $self->metrics($metrics);
 };
 
