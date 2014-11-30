@@ -76,6 +76,9 @@ sub run {
 
         $self->test->run($self->metrics);
         sleep(2);
+
+        # update current_time, otherwise we'll be in an endless loop
+        $current_time = time();
     }
 }
 
