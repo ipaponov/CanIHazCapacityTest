@@ -64,6 +64,9 @@ sub run {
             1;
         } or do {
             $log->debug('Read config file failed: '.($@ || "Zombie error"));
+            # we probably have config file missing, therefore nothing to do
+            # let's sleep at bit, to save some cpu cycles
+            sleep(1);
             next;
         };
 
