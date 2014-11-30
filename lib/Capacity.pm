@@ -15,11 +15,6 @@ has configuration_file => (
     default => '/home/ipaponov/OSS/CanIHazCapacityTest/conf/test.conf'
 );
 
-has config_read_at => (
-    is      => 'rw',
-    default => 0
-);
-
 has stop_file => (
     is      => 'ro',
     default => '/home/ipaponov/OSS/CanIHazCapacityTest/conf/stop'
@@ -38,9 +33,9 @@ sub BUILD {
 # main run sub
 # should work for about 60 seconds, more or less
 # and do whatever test you'll ask it to do
-# if there is no test configuration file in place - it will sleep and wait for file
-# if there is empty configuration file - it will sleep and wait for content
-# if there is a stop file in place - it will exit immediately
+# if there is no test configuration file in place -> exit
+# if there is empty configuration file -> exit
+# if there is a stop file in place -> exit
 sub run {
     my $self = shift;
 
@@ -57,27 +52,25 @@ sub run {
     $start_time -= $offset;
     $log->trace('Start epoch: '.$start_time);
 
+    # read config file
+    eval {
+        $self->read_config();
+        1;
+    } or do {
+        $log->info('Read config file failed: '.($@ || "Zombie error"));
+        exit;
+    };
+
     my $current_time = time();
     my $test_counter = 0;
 
     while ($current_time <= $start_time + 59) {
+
         # check for stopfiles
         if (-e $self->stop_file) {
             $log->info('Stop file found: '.$self->stop_file);
             exit;
         }
-
-        eval {
-            $self->read_config();
-            1;
-        } or do {
-            $log->debug('Read config file failed: '.($@ || "Zombie error"));
-            # we probably have config file missing, therefore nothing to do
-            # let's sleep at bit, to save some cpu cycles
-            sleep(1);
-            $current_time = time();
-            next;
-        };
 
         # okay, so we're ready to run capacity test here
         # ideally we would like to randomize test execution times a bit,
@@ -90,7 +83,7 @@ sub run {
         #
         # In order to address that requirement
         # we will dinamically calculate approx. time that we have for 1 test
-        # (time left / nr. of tests left)
+        # approx. time = (time left / nr. of tests left)
         # and sleep for rand(approx. time)
 
         my $time_left = 60 - (time() - $start_time);
@@ -115,22 +108,16 @@ sub run {
         # update current_time, otherwise we'll be in an endless loop
         $current_time = time();
     }
+
+    $log->info('We\'re out of time. See ya!');
 }
 
 sub read_config {
     my $self = shift;
 
-    # don't read too often, once every 2 seconds is more then enough
-    if ($self->config_read_at > 0 && (time() - $self->config_read_at < 2)) {
-        return;
-    }
-
     # read config file
     $log->trace('About to read config file: '.$self->configuration_file);
     my @lines = ();
-
-    # save read attempt time
-    $self->config_read_at(time);
 
     if (-e $self->configuration_file) {
         @lines = read_file($self->configuration_file);
@@ -153,7 +140,7 @@ sub read_config {
     $self->test->freq($test_config[2]);
     $self->metrics->metrics_destination($test_config[3]);
 
-    $log->trace('Config file was successfully read @ '.$self->config_read_at);
+    $log->trace('Config file was successfully read @ '.time);
 }
 
 1;

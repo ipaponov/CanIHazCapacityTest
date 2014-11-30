@@ -14,15 +14,9 @@ How to use it?
  * to start capacity test, create test configuration files on set of servers (via func shell, puppet, chef)
  * remove test configuration files, to stop capacity testing (or create a stop file, to temp. test freeze).
 
-Software should react immediately when you'll create new configuration file. As well stop file.  
-One thing to keep in mind, when adding new conf. file, you might have a bit more traffic then expected during the first minute.
-That's because we're already in the middle (or even at the end) of the minute, but we still have to execute X ammount of tests.
-Sotware will try to catch up. Starting from the next minute, everything should be as expected.  
-To avoid this you can:
- * create stop file (all scripts will die)
- * create configuration file
- * remove stop file
- * wait new cronjobs to start
+Software will react relatively fast when you'll create new configuration file. At most you'll have to wait for 1 minute.  
+Same goes for configuration changes, if file exists.  
+As for the stop file - it will stop capacity testing immediately.  
 
 Configuration file
 -----------
@@ -34,7 +28,7 @@ Human readable name, used in the metric that your test will generate.
 
 **test_type**  
 Based on this type, we will define which class to use in our test.  
-See *Capacity->capacity_tests_list* for the list of available options.
+See *Capacity::Test->capacity_tests_list* for the list of available options.
 
 **test_frequency**  
 How often do you want to run your test within a minute?  
