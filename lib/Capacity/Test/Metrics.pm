@@ -25,7 +25,7 @@ before 'test' => sub {
 after 'test' => sub {
     my $self = shift;
     my ($seconds, $microseconds) = gettimeofday;
-    $log->trace('Now is: '.$seconds.'.'.$microseconds);
+    $log->trace('I\'m done. Now is: '.$seconds.'.'.$microseconds);
     $self->timer(($seconds.'.'.$microseconds) - $self->timer());
     $log->trace(
         sprintf('Test completed in %.2f s', $self->timer())
