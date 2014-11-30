@@ -44,7 +44,14 @@ sub run {
     my $self = shift;
 
     my $start_time = time();
+
     # in case initialization took some time
+    #
+    # NOTE that if you'll run this software from command line
+    # and you're in the middle of the minute
+    # start time variable will still point you to the beginning of that minute
+    # and that's expected
+    # since this software is designed to run as a cronjob
     my $offset = $start_time % 60;
     $start_time -= $offset;
     $log->trace('Start epoch: '.$start_time);
